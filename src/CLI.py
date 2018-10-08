@@ -47,6 +47,9 @@ class CLIRuntimeError(CLIError):
 
 class TerminateProgram(CLIError):
     """Raised to inform callers once the program should be terminated cleanly."""
+    
+class ArgumentAmountError(CLIError):
+    """Raised when there is an invalid number of arguments supplied."""
 
 #===============================================================================
 # Methods powering the commands and operators
@@ -257,7 +260,22 @@ def fix(file_set, user_args):
 
 #------------------------------------------------------------------------------ 
 # Operations
-#------------------------------------------------------------------------------ 
+#------------------------------------------------------------------------------
+def _get_gap_handling_kwarg(chosen_option):
+    """
+    Return a dictionary representing the gap-handling keyword argument to pass to the FileSet's method.
+    
+    @raise InputProcessingError: The given option is not a valid gap handling option
+    """ 
+    options = {
+            '-sg': {'strip_gaps': True},
+            '-pg': {'preserve_gaps': True}
+        }
+    
+    try:
+        return options[chosen_option]
+    except KeyError:
+        raise InputProcessingError("The option '{}' is not a valid gap-handling option.".format(chosen_option))
 
 def add(file_set, user_args):
     """
@@ -413,10 +431,23 @@ def switch(file_set, user_args):
     if file_set is None:
         raise CLIRuntimeError("No file set has been selected!")
     
-    range1 = _expand_range(user_args[0])
-    range2 = _expand_range(user_args[2])
+    args_len = len(user_args)
     
-    file_set.switch_file_ranges(range1, range2)
+    if args_len < 3:
+        raise ArgumentAmountError("Switch expects 3 to 4 arguments. You supplied {}.".format(args_len))
+    else:
+        range1 = _expand_range(user_args[0])
+        range2 = _expand_range(user_args[2])
+        if args_len == 4:
+            option = user_args[3]
+            
+            gap_hndlng_kwarg = _get_gap_handling_kwarg(option)
+        elif args_len > 4:
+            raise ArgumentAmountError("Switch expects 3 to 4 arguments. You supplied {}.".format(args_len))
+        else:
+            gap_hndlng_kwarg = {} # no gap handling selected
+    
+    file_set.switch_file_ranges(range1, range2, **gap_hndlng_kwarg)
 
 #===============================================================================
 # Methods used for input processing
