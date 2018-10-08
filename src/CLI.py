@@ -263,7 +263,7 @@ def add(file_set, user_args):
     """
     Validate the user input and add the specified file(s).
     
-    Expected user arguments: + NAME+ SPOT
+    Expected user arguments: + [-pg|-sg] NAME+ SPOT
     
     @raise InputProcessingError: The user input is invalid
     @raise RuntimeError: The user input is valid, but leads to an invalid operation 
@@ -389,7 +389,7 @@ def move(file_set, user_args):
     """
     Validate the user input and move the specified file(s). Gaps in the given range are stripped by this operation.
     
-    Expected user arguments: RANGE > SPOT
+    Expected user arguments: RANGE > SPOT [-pg|-sg]
     
     @raise InputProcessingError: The user input is invalid 
     """
@@ -406,7 +406,7 @@ def switch(file_set, user_args):
     """
     Validate the user input and switch the specified files or file ranges.
     
-    Expected user arguments: RANGE ~ RANGE
+    Expected user arguments: RANGE ~ RANGE [-pg|-sg]
     
     @raise InputProcessingError: The user input is invalid
     """
