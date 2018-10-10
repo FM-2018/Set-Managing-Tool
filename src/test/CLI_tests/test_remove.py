@@ -7,8 +7,9 @@ import unittest
 import unittest.mock as mock
 from FileSet import FileSet
 import CLI
-from CLI import remove, CLIRuntimeError
-from test.testing_tools import mock_assert_msg
+from CLI import remove, CLIRuntimeError, ArgumentAmountError, default_remove_set,\
+    InputProcessingError
+from test.testing_tools import mock_assert_msg, KeywordArgTuple
 
 mock_remove_files = mock.MagicMock(name='remove_files')
 mock_expand_range = mock.MagicMock(name='_expand_range')
@@ -212,6 +213,43 @@ class RemoveTests(unittest.TestCase):
         remove(self.test_set, test_args)
         
         mock_assert_msg(mock_remove_files.assert_called_once_with, [[2, 3], default_remove_set], "The CLI fails to properly remove files if the remove set already contains files.")
+    
+    def test_too_few_arguments(self):
+        """The CLI should recognize and raise an error when too few arguments are given."""
+        test_args = ['-']
+        
+        with self.assertRaises(ArgumentAmountError, msg="The FileSet fails to recognize when too few arguments are given."):
+            remove(self.test_set, test_args)
+        
+        mock_assert_msg(mock_remove_files.assert_not_called, [], "The CLI attempts to perform a removal operation even though there was an invalid number of arguments.")
+        
+    def test_kwarg_strip_gaps(self):
+        """The CLI should enable the user to choose strip_gaps as a gap handling method."""
+        test_args = ['-', '2-3', '4-5', '-sg']
+        mock_expand_range.side_effect = lambda x: (2, 3) if x.startswith('2') else (4, 5)
+        
+        remove(self.test_set, test_args)
+        
+        mock_assert_msg(mock_remove_files.assert_called_once_with, [[2, 3, 4, 5], self.default_remove_set, KeywordArgTuple('strip_gaps', True)], "The CLI fails to provide access to the gap-handling option strip_gaps.")
+        
+    def test_kwarg_preserve_gaps(self):
+        """The CLI should enable the user to choose preserve_gaps as a gap handling method."""
+        test_args = ['-', '2-3', '4-5', '-pg']
+        mock_expand_range.side_effect = lambda x: (2, 3) if x.startswith('2') else (4, 5)
+        
+        remove(self.test_set, test_args)
+        
+        mock_assert_msg(mock_remove_files.assert_called_once_with, [[2, 3, 4, 5], self.default_remove_set, KeywordArgTuple('preserve_gaps', True)], "The CLI fails to provide access to the gap-handling option preserve_gaps.")
+
+    def test_invalid_kwarg_gap_handler(self):
+        """The CLI should recognize and raise an error if an invalid gap-handling option was chosen."""
+        test_args = ['-', '2-3', '4-5', '-xx']
+        mock_expand_range.side_effect = lambda x: (2, 3) if x.startswith('2') else (4, 5)
+        
+        with self.assertRaises(InputProcessingError, msg="The CLI fails to recognize and raise an error when an invalid gap-handling option was chosen"):
+            remove(self.test_set, test_args)
+        
+        mock_assert_msg(mock_remove_files.assert_not_called, [], "The CLI tries to perform an operation even though an error was raised.")
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
