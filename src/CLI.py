@@ -23,7 +23,12 @@ split_pattern_regex = re.compile(r'(?<!\\)(\\\\)*' + re.escape(FileSet.INDEX_IND
 
 class CLIError(Exception):
     """Base exception for CLI errors."""
-    pass
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.msg = args[-1]
+    
+    def __str__(self):
+        return self.msg
 
 class InputProcessingError(CLIError):
     """Raised when the user arguments can't be processed as expected due to being invalid."""
@@ -287,9 +292,6 @@ def add(file_set, user_args):
     @raise SpotExpansionError: The given spot is invalid
     @raise RuntimeError: The user input is valid, but leads to an invalid operation 
     """
-    # TODO: use add_files instead of add_file here by first renaming all given files into a temporary FileSet?
-    # FIXME: spot expansion errors aren't printed as messages properly
-    
     if file_set is None:
         raise CLIRuntimeError("No file set has been selected!")
     
@@ -305,8 +307,7 @@ def add(file_set, user_args):
         if not os.path.isfile(file_name):
             raise CLIRuntimeError("The file '%s' does not exist." % file_name)
     
-    ## PERFORM ACTION
-    
+    ## PERFORM ACTION ##
     ## Deal with files that come from a file set first, one by one
     spot_offset = 0
     non_organized_file_names = []
