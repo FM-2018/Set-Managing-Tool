@@ -283,7 +283,8 @@ def add(file_set, user_args):
     
     Expected user arguments: + NAME+ SPOT
     
-    @raise InputProcessingError: The user input is invalid
+    @raise CLIRuntimeError: The given file set is None OR one of the given files does not exist
+    @raise SpotExpansionError: The given spot is invalid
     @raise RuntimeError: The user input is valid, but leads to an invalid operation 
     """
     # TODO: use add_files instead of add_file here by first renaming all given files into a temporary FileSet?
@@ -337,6 +338,12 @@ def remove(file_set, user_args):
     Gaps within the index ranges are ignored.
     
     Expected user arguments: - [-n|-a PATTERN] RANGE+ [-pg|-sg]
+    
+    @raise InputProcessingError: The user input is invalid (i.e. an invalid gap handling option has been given)
+    @raise ArgumentAmountError: An invalid number of arguments is given
+    @raise CLIRuntimeError: The given file set is None OR option -n or -a is used inappropriately
+    @raise PatternExpansionError: The pattern given to option -n or -a is invalid
+    @raise RangeExpansionError: One or more of the given ranges are invalid 
     """
     ## TODO: what if user enters same integer twice or has overlapping ranges?
     global default_remove_set
@@ -428,7 +435,11 @@ def move(file_set, user_args):
     
     Expected user arguments: RANGE > SPOT [-pg|-sg]
     
-    @raise InputProcessingError: The user input is invalid 
+    @raise InputProcessingError: The user input is invalid (i.e. an invalid gap handling option has been given) 
+    @raise ArgumentAmountError: An invalid number of arguments is given
+    @raise CLIRuntimeError: The given file set is None
+    @raise RangeExpansionError: The given range is invalid
+    @raise SpotExpansionError: The given spot is invalid
     """
     if file_set is None:
         raise CLIRuntimeError("No file set has been selected!")
@@ -457,7 +468,10 @@ def switch(file_set, user_args):
     
     Expected user arguments: RANGE ~ RANGE [-pg|-sg]
     
-    @raise InputProcessingError: The user input is invalid
+    @raise InputProcessingError: The user input is invalid (i.e. an invalid gap handling option has been given)
+    @raise ArgumentAmountError: An invalid number of arguments is given
+    @raise CLIRuntimeError: The given file set is None
+    @raise RangeExpansionError: One or both of the given ranges is/are invalid
     """
     if file_set is None:
         raise CLIRuntimeError("No file set has been selected!")
