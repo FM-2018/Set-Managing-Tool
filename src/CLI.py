@@ -414,10 +414,22 @@ def move(file_set, user_args):
     if file_set is None:
         raise CLIRuntimeError("No file set has been selected!")
     
-    index_range = _expand_range(user_args[0])
-    spot = _expand_spot(user_args[2])
+    args_len = len(user_args)
+    if args_len < 3:
+        raise ArgumentAmountError("Move expects 3 to 4 arguments. You supplied {}.".format(args_len))
+    else:
+        index_range = _expand_range(user_args[0])
+        spot = _expand_spot(user_args[2])
+        if args_len == 4:
+            option = user_args[3]
+            
+            gap_hndlng_kwarg = _get_gap_handling_kwarg(option)
+        elif args_len > 4:
+            raise ArgumentAmountError("Move expects 3 to 4 arguments. You supplied {}.".format(args_len))
+        else:
+            gap_hndlng_kwarg = {} # no gap handling selected
     
-    file_set.move_files(index_range, spot)
+    file_set.move_files(index_range, spot, **gap_hndlng_kwarg)
     
 
 def switch(file_set, user_args):
@@ -432,7 +444,6 @@ def switch(file_set, user_args):
         raise CLIRuntimeError("No file set has been selected!")
     
     args_len = len(user_args)
-    
     if args_len < 3:
         raise ArgumentAmountError("Switch expects 3 to 4 arguments. You supplied {}.".format(args_len))
     else:
