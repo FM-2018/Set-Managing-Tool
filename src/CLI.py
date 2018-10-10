@@ -281,7 +281,7 @@ def add(file_set, user_args):
     """
     Validate the user input and add the specified file(s).
     
-    Expected user arguments: + [-pg|-sg] NAME+ SPOT
+    Expected user arguments: + NAME+ SPOT
     
     @raise InputProcessingError: The user input is invalid
     @raise RuntimeError: The user input is valid, but leads to an invalid operation 
@@ -293,11 +293,12 @@ def add(file_set, user_args):
         raise CLIRuntimeError("No file set has been selected!")
     
     ## Process Arguments
-    try:
+    args_len = len(user_args)
+    if args_len < 3:
+        raise ArgumentAmountError("Move expects 3 to 4 arguments. You supplied {}. Usage: + NAME+ SPOT".format(args_len))
+    else:
         left_spot, right_spot = _expand_spot(user_args[-1]) # last argument
         file_names = user_args[1:-1] # second to before-last argument
-    except IndexError:
-        raise InputProcessingError("Not enough arguments to add file(s). Usage: + NAME [NAME [..]] SPOT")
     
     for file_name in file_names:
         if not os.path.isfile(file_name):
