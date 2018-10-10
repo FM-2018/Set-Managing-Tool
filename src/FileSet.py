@@ -541,9 +541,10 @@ class FileSet():
             add_indexes = [*foreign_file_set.files.keys()]
         else:
             ## Check index input for validity
-            add_indexes = list(add_indexes) # necessary since generators don't support item deletion
+            given_add_indexes = list(add_indexes) # necessary since generators don't support item deletion
+            add_indexes = []
             
-            for i, index in enumerate(add_indexes):
+            for i, index in enumerate(given_add_indexes):
                 ## Check whether index is actually a valid integer
                 if not type(index) is int: raise TypeError(index, "'{}' is not a valid index.".format(index))
                 
@@ -556,13 +557,16 @@ class FileSet():
                         raise FileSet.ConflictingOptionsError("Both strip_gaps and preserve_gaps were set to True, even though you have to decide for one.")
                     
                     if strip_gaps: 
-                        del add_indexes[i]
+                        pass # skip this index altogether
                     elif preserve_gaps:
-                        pass    
+                        add_indexes.append(index) # add index to index list nevertheless. It will be recognized as a gap and skipped later on    
                     else: 
                         foreign_left_pattern, foreign_right_pattern = foreign_file_set.pattern
                         raise FileSet.IndexUnassignedError(index, foreign_file_set, "The index {} is unassigned in the foreign FileSet {}{}{} and thus can't be added to this FileSet.".format(index, foreign_left_pattern, FileSet.INDEX_INDICATOR, foreign_right_pattern))
-                        
+                else:
+                    ## Index exists. Add to add_indexes list so it will be added later on
+                    add_indexes.append(index)
+        
         ## Find minimum index that is assigned in this insert domain. Required to check whether/where to move range to make space
         _, new_pos = self._check_and_order_spot(spot)
         
