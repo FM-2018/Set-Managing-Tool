@@ -352,6 +352,9 @@ def remove(file_set, user_args):
     if file_set is None:
         raise CLIRuntimeError("No file set has been selected!")
     
+    if len(user_args) < 2:
+        raise ArgumentAmountError("Remove expects at least 2 arguments. You supplied {}.".format(len(user_args)))
+    
     ## Determine which set to remove the files into.
     # Either create a new one, append to an existing one, or append to the default remove set if no option is given.
     if user_args[1] == '-n':
@@ -382,6 +385,7 @@ def remove(file_set, user_args):
             raise CLIRuntimeError(pattern_string, "No existing file set has been found with the pattern '{}'. Try -n instead!".format(pattern_string))
         
     else:
+        optional_arg_one_set = False
         if default_remove_set is not None:
             remove_set = default_remove_set
         else:
