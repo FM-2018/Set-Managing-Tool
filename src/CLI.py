@@ -47,6 +47,9 @@ class CLIRuntimeError(CLIError):
 
 class TerminateProgram(CLIError):
     """Raised to inform callers once the program should be terminated cleanly."""
+    
+class ArgumentAmountError(CLIError):
+    """Raised when there is an invalid number of arguments supplied."""
 
 #===============================================================================
 # Methods powering the commands and operators
@@ -257,15 +260,31 @@ def fix(file_set, user_args):
 
 #------------------------------------------------------------------------------ 
 # Operations
-#------------------------------------------------------------------------------ 
+#------------------------------------------------------------------------------
+def _get_gap_handling_kwarg(chosen_option):
+    """
+    Return a dictionary representing the gap-handling keyword argument to pass to the FileSet's method.
+    
+    @raise InputProcessingError: The given option is not a valid gap handling option
+    """ 
+    options = {
+            '-sg': {'strip_gaps': True},
+            '-pg': {'preserve_gaps': True}
+        }
+    
+    try:
+        return options[chosen_option]
+    except KeyError:
+        raise InputProcessingError("The option '{}' is not a valid gap-handling option.".format(chosen_option))
 
 def add(file_set, user_args):
     """
     Validate the user input and add the specified file(s).
     
-    Expected user arguments: + [-pg|-sg] NAME+ SPOT
+    Expected user arguments: + NAME+ SPOT
     
-    @raise InputProcessingError: The user input is invalid
+    @raise CLIRuntimeError: The given file set is None OR one of the given files does not exist
+    @raise SpotExpansionError: The given spot is invalid
     @raise RuntimeError: The user input is valid, but leads to an invalid operation 
     """
     # TODO: use add_files instead of add_file here by first renaming all given files into a temporary FileSet?
@@ -275,11 +294,12 @@ def add(file_set, user_args):
         raise CLIRuntimeError("No file set has been selected!")
     
     ## Process Arguments
-    try:
+    args_len = len(user_args)
+    if args_len < 3:
+        raise ArgumentAmountError("Move expects 3 to 4 arguments. You supplied {}. Usage: + NAME+ SPOT".format(args_len))
+    else:
         left_spot, right_spot = _expand_spot(user_args[-1]) # last argument
         file_names = user_args[1:-1] # second to before-last argument
-    except IndexError:
-        raise InputProcessingError("Not enough arguments to add file(s). Usage: + NAME [NAME [..]] SPOT")
     
     for file_name in file_names:
         if not os.path.isfile(file_name):
@@ -311,23 +331,34 @@ def add(file_set, user_args):
     new_spot = (left_spot+spot_offset, right_spot+spot_offset)
     file_set.add_files(non_organized_file_names, new_spot)
 
-def remove(file_set, user_args): #FIXME: unit test
+def remove(file_set, user_args):
     """
     Validate the user input and remove the file(s) with the specified index(es).
     
     Gaps within the index ranges are ignored.
     
-    Expected user arguments: - [-n|-a PATTERN] RANGE+
+    Expected user arguments: - [-n|-a PATTERN] RANGE+ [-pg|-sg]
+    
+    @raise InputProcessingError: The user input is invalid (i.e. an invalid gap handling option has been given)
+    @raise ArgumentAmountError: An invalid number of arguments is given
+    @raise CLIRuntimeError: The given file set is None OR option -n or -a is used inappropriately
+    @raise PatternExpansionError: The pattern given to option -n or -a is invalid
+    @raise RangeExpansionError: One or more of the given ranges are invalid 
     """
+    ## TODO: what if user enters same integer twice or has overlapping ranges?
     global default_remove_set
     global file_set_cache
     
     if file_set is None:
         raise CLIRuntimeError("No file set has been selected!")
     
+    if len(user_args) < 2:
+        raise ArgumentAmountError("Remove expects at least 2 arguments. You supplied {}.".format(len(user_args)))
+    
     ## Determine which set to remove the files into.
     # Either create a new one, append to an existing one, or append to the default remove set if no option is given.
     if user_args[1] == '-n':
+        optional_arg_one_set = True
         pattern_string = user_args[2]
         pattern = _expand_pattern(pattern_string)
         
@@ -340,6 +371,7 @@ def remove(file_set, user_args): #FIXME: unit test
         file_set_cache.append(remove_set)
         
     elif user_args[1] == '-a':
+        optional_arg_one_set = True
         pattern_string = user_args[2]
         pattern = _expand_pattern(pattern_string)
         ## Search for file set with this pattern in file_set_cache
@@ -353,6 +385,7 @@ def remove(file_set, user_args): #FIXME: unit test
             raise CLIRuntimeError(pattern_string, "No existing file set has been found with the pattern '{}'. Try -n instead!".format(pattern_string))
         
     else:
+        optional_arg_one_set = False
         if default_remove_set is not None:
             remove_set = default_remove_set
         else:
@@ -367,11 +400,26 @@ def remove(file_set, user_args): #FIXME: unit test
             raise CLIRuntimeError(remove_set, "If you want to remove from the file set that files are usually removed into ('{}')," + 
                 "you need to specify another one to add the removed files to using -n or -a.".format(remove_set.pattern))
         
-    ## Find indexes to remove
-    if remove_set is default_remove_set:
-        index_ranges = user_args[1:]
+    ## Check last argument in case it is a gap-handling option
+    last_arg = user_args[-1]
+    if last_arg.startswith('-'):
+        gap_hndlng_kwarg = _get_gap_handling_kwarg(last_arg)
+        last_optional_arg_set = True
     else:
-        index_ranges = user_args[3:]
+        gap_hndlng_kwarg = {} # no gap handling
+        last_optional_arg_set = False
+    
+    ## Find indexes to remove
+    if not optional_arg_one_set:
+        if last_optional_arg_set:
+            index_ranges = user_args[1:-1]
+        else:
+            index_ranges = user_args[1:]
+    else:
+        if last_optional_arg_set:
+            index_ranges = user_args[3:-1]
+        else:
+            index_ranges = user_args[3:]
     
     index_list = []
     for index_range in index_ranges:
@@ -381,7 +429,7 @@ def remove(file_set, user_args): #FIXME: unit test
     
     ## Removal operation
     try:
-        file_set.remove_files(index_list, remove_set)
+        file_set.remove_files(index_list, remove_set, **gap_hndlng_kwarg)
     except FileSet.IndexUnassignedError as e:
         raise CLIRuntimeError(e.args[0], "The file set does not have a file with the index {}.".format(e.args[0]))
     
@@ -391,15 +439,31 @@ def move(file_set, user_args):
     
     Expected user arguments: RANGE > SPOT [-pg|-sg]
     
-    @raise InputProcessingError: The user input is invalid 
+    @raise InputProcessingError: The user input is invalid (i.e. an invalid gap handling option has been given) 
+    @raise ArgumentAmountError: An invalid number of arguments is given
+    @raise CLIRuntimeError: The given file set is None
+    @raise RangeExpansionError: The given range is invalid
+    @raise SpotExpansionError: The given spot is invalid
     """
     if file_set is None:
         raise CLIRuntimeError("No file set has been selected!")
     
-    index_range = _expand_range(user_args[0])
-    spot = _expand_spot(user_args[2])
+    args_len = len(user_args)
+    if args_len < 3:
+        raise ArgumentAmountError("Move expects 3 to 4 arguments. You supplied {}.".format(args_len))
+    else:
+        index_range = _expand_range(user_args[0])
+        spot = _expand_spot(user_args[2])
+        if args_len == 4:
+            option = user_args[3]
+            
+            gap_hndlng_kwarg = _get_gap_handling_kwarg(option)
+        elif args_len > 4:
+            raise ArgumentAmountError("Move expects 3 to 4 arguments. You supplied {}.".format(args_len))
+        else:
+            gap_hndlng_kwarg = {} # no gap handling selected
     
-    file_set.move_files(index_range, spot)
+    file_set.move_files(index_range, spot, **gap_hndlng_kwarg)
     
 
 def switch(file_set, user_args):
@@ -408,15 +472,30 @@ def switch(file_set, user_args):
     
     Expected user arguments: RANGE ~ RANGE [-pg|-sg]
     
-    @raise InputProcessingError: The user input is invalid
+    @raise InputProcessingError: The user input is invalid (i.e. an invalid gap handling option has been given)
+    @raise ArgumentAmountError: An invalid number of arguments is given
+    @raise CLIRuntimeError: The given file set is None
+    @raise RangeExpansionError: One or both of the given ranges is/are invalid
     """
     if file_set is None:
         raise CLIRuntimeError("No file set has been selected!")
     
-    range1 = _expand_range(user_args[0])
-    range2 = _expand_range(user_args[2])
+    args_len = len(user_args)
+    if args_len < 3:
+        raise ArgumentAmountError("Switch expects 3 to 4 arguments. You supplied {}.".format(args_len))
+    else:
+        range1 = _expand_range(user_args[0])
+        range2 = _expand_range(user_args[2])
+        if args_len == 4:
+            option = user_args[3]
+            
+            gap_hndlng_kwarg = _get_gap_handling_kwarg(option)
+        elif args_len > 4:
+            raise ArgumentAmountError("Switch expects 3 to 4 arguments. You supplied {}.".format(args_len))
+        else:
+            gap_hndlng_kwarg = {} # no gap handling selected
     
-    file_set.switch_file_ranges(range1, range2)
+    file_set.switch_file_ranges(range1, range2, **gap_hndlng_kwarg)
 
 #===============================================================================
 # Methods used for input processing

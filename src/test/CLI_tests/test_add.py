@@ -7,7 +7,7 @@ import unittest
 import unittest.mock as mock
 import CLI
 from CLI import add, CLIError, CLIRuntimeError, SpotExpansionError,\
-    InputProcessingError
+    InputProcessingError, ArgumentAmountError
 from FileSet import FileSet
 from test.testing_tools import mock_assert_msg, mock_assert_many_msg
 
@@ -181,6 +181,18 @@ class AddTests(unittest.TestCase):
 #         
 #         add(self.test_set, test_args)
 #         mock_assert_msg(mock_add_file.assert_called_once_with, ['set1.jpg', (3, 4)], "The CLI doesn't actually try to add the file.")
+    
+    def test_too_few_arguments(self):
+        """The CLI shoudl recognize and raise an error when too few arguments are given."""
+        test_args = ['+', '1/2']
+        mock_expand_spot.return_value = (1, 2)
+        CLI.file_set_cache = []
+        
+        with self.assertRaises(ArgumentAmountError, msg="The CLI fails to recognize and raise an error when too few arguments are given."):
+            add(self.test_set, test_args)
+        
+        mock_assert_msg(mock_add_file_set.assert_not_called, [], "The CLI tries to perform an operation even though there were too few arguments.")
+        mock_assert_msg(mock_add_files.assert_not_called, [], "The CLI tries to perform an operation even though there were too few arguments.")
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
