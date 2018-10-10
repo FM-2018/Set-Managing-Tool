@@ -330,14 +330,15 @@ def add(file_set, user_args):
     new_spot = (left_spot+spot_offset, right_spot+spot_offset)
     file_set.add_files(non_organized_file_names, new_spot)
 
-def remove(file_set, user_args): #FIXME: unit test
+def remove(file_set, user_args):
     """
     Validate the user input and remove the file(s) with the specified index(es).
     
     Gaps within the index ranges are ignored.
     
-    Expected user arguments: - [-n|-a PATTERN] RANGE+
+    Expected user arguments: - [-n|-a PATTERN] RANGE+ [-pg|-sg]
     """
+    ## TODO: what if user enters same integer twice or has overlapping ranges?
     global default_remove_set
     global file_set_cache
     
@@ -347,6 +348,7 @@ def remove(file_set, user_args): #FIXME: unit test
     ## Determine which set to remove the files into.
     # Either create a new one, append to an existing one, or append to the default remove set if no option is given.
     if user_args[1] == '-n':
+        optional_arg_one_set = True
         pattern_string = user_args[2]
         pattern = _expand_pattern(pattern_string)
         
@@ -359,6 +361,7 @@ def remove(file_set, user_args): #FIXME: unit test
         file_set_cache.append(remove_set)
         
     elif user_args[1] == '-a':
+        optional_arg_one_set = True
         pattern_string = user_args[2]
         pattern = _expand_pattern(pattern_string)
         ## Search for file set with this pattern in file_set_cache
@@ -386,11 +389,26 @@ def remove(file_set, user_args): #FIXME: unit test
             raise CLIRuntimeError(remove_set, "If you want to remove from the file set that files are usually removed into ('{}')," + 
                 "you need to specify another one to add the removed files to using -n or -a.".format(remove_set.pattern))
         
-    ## Find indexes to remove
-    if remove_set is default_remove_set:
-        index_ranges = user_args[1:]
+    ## Check last argument in case it is a gap-handling option
+    last_arg = user_args[-1]
+    if last_arg.startswith('-'):
+        gap_hndlng_kwarg = _get_gap_handling_kwarg(last_arg)
+        last_optional_arg_set = True
     else:
-        index_ranges = user_args[3:]
+        gap_hndlng_kwarg = {} # no gap handling
+        last_optional_arg_set = False
+    
+    ## Find indexes to remove
+    if not optional_arg_one_set:
+        if last_optional_arg_set:
+            index_ranges = user_args[1:-1]
+        else:
+            index_ranges = user_args[1:]
+    else:
+        if last_optional_arg_set:
+            index_ranges = user_args[3:-1]
+        else:
+            index_ranges = user_args[3:]
     
     index_list = []
     for index_range in index_ranges:
@@ -400,7 +418,7 @@ def remove(file_set, user_args): #FIXME: unit test
     
     ## Removal operation
     try:
-        file_set.remove_files(index_list, remove_set)
+        file_set.remove_files(index_list, remove_set, **gap_hndlng_kwarg)
     except FileSet.IndexUnassignedError as e:
         raise CLIRuntimeError(e.args[0], "The file set does not have a file with the index {}.".format(e.args[0]))
     
