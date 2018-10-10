@@ -298,7 +298,7 @@ def add(file_set, user_args):
     ## Process Arguments
     args_len = len(user_args)
     if args_len < 3:
-        raise ArgumentAmountError("Move expects 3 to 4 arguments. You supplied {}. Usage: + NAME+ SPOT".format(args_len))
+        raise ArgumentAmountError("Add expects at least 3 arguments. You supplied {}. Usage: + NAME+ SPOT".format(args_len))
     else:
         left_spot, right_spot = _expand_spot(user_args[-1]) # last argument
         file_names = user_args[1:-1] # second to before-last argument
