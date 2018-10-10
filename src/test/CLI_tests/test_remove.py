@@ -4,12 +4,13 @@ Created on 06.09.2018
 @author: FM
 '''
 import unittest
-import unittest.mock as mock
-from FileSet import FileSet
+
+from CLI import remove, CLIRuntimeError, ArgumentAmountError, InputProcessingError
 import CLI
-from CLI import remove, CLIRuntimeError, ArgumentAmountError, default_remove_set,\
-    InputProcessingError
+from FileSet import FileSet
 from test.testing_tools import mock_assert_msg, KeywordArgTuple
+import unittest.mock as mock
+
 
 mock_remove_files = mock.MagicMock(name='remove_files')
 mock_expand_range = mock.MagicMock(name='_expand_range')
