@@ -249,8 +249,11 @@ class FileSet():
             file_types_at_index.remove(file_type) # only remove this type from index file_type list, since there are more types assigned
         
     
-    def _get_name(self, index, file_type):
-        left_pattern, right_pattern = self.pattern
+    def _get_name(self, index, file_type, pattern=None):
+        if pattern is not None:
+            left_pattern, right_pattern = pattern
+        else:
+            left_pattern, right_pattern = self.pattern
         
         if file_type == '':
             return "{}{}{}".format(left_pattern, index, right_pattern)
@@ -398,6 +401,22 @@ class FileSet():
     #===========================================================================
     # High level / API Procedures
     #===========================================================================
+    def rename(self, new_pattern):
+        """
+        Rename all of the files contained in the file set using the given new pattern.
+        
+        @param new_pattern: The new pattern to be used
+        """
+        for index in self.files.keys():
+            for file_type in self.files[index]:
+                old_name = self._get_name(index, file_type)
+                new_name = self._get_name(index, file_type, new_pattern)
+                
+                rename(old_name, new_name) # change name physically
+        
+        # update pattern after successful rename
+        self.pattern = new_pattern
+    
     def update(self):
         """Re-read the files in the directory and update the files list. This is useful e.g. when another software has physically added or deleted files to/from the file set."""
         self.files = self._find_files(self.fitting_file_regex)
