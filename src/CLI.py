@@ -720,7 +720,7 @@ def determine_and_perform_action(args_list):
 
     
     if command_or_operand == 'terminate':
-        raise TerminateProgram("")
+        raise TerminateProgram("Terminate")
 
     #------------------------------------------------------------------------------
     # Actions that may modify the active_file_set cannot feasibly be contained within
@@ -734,7 +734,7 @@ def determine_and_perform_action(args_list):
             return
         else:
             ## Exit entire program
-            raise TerminateProgram()
+            raise TerminateProgram("Terminate")
     
     
     if command_or_operand == 'create':
