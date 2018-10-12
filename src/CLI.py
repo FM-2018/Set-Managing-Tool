@@ -186,10 +186,10 @@ def print_help(_1, _2):
     
     print('## OPERATIONS ##')
     ADD =       ('+ FILE_NAME [FILE_NAME [..]] SPOT',    'Add one or more files to the currently selected file set. If the file name contains spaces, it needs to be surrounded by quotes.')
-    REMOVE =    ('- [-n NEW_SET_PATTERN] INDEXES [INDEXES [..]]',
-                                                    'Remove one or more files from the currently selected file set based on their indexes. They may be given as a range or as a single integer. If NEW_SET_NAME is supplied, the files will be appended to a file set of this pattern.')
-    MOVE =      ('INDEXES > NEW_POSITION',          'Move one or more files to the specified position. The files may be specified as a range of indexes or as a single integer. The positions is expected as a spot.')
-    SWITCH =    ('INDEXES ~ INDEXES',               'Switch two files or file ranges with each other. The files may be specified as a range of indexes or as a single integer.')
+    REMOVE =    ('- [-n NEW_SET_PATTERN | -a EXISTING_SET_PATTERN] INDEXES [INDEXES [..]] [-pg|-sg]',
+                                                      'Remove one or more files from the currently selected file set based on their indexes. They may be given as a range or as a single integer. If NEW_SET_NAME is supplied, the files will be appended to a file set of this pattern.')
+    MOVE =      ('INDEXES > SPOT [-pg|-sg]',          'Move one or more files to the specified position. The files may be specified as a range of indexes or as a single integer. The positions is expected as a spot.')
+    SWITCH =    ('INDEXES ~ INDEXES [-pg|-sg]',       'Switch two files or file ranges with each other. The files may be specified as a range of indexes or as a single integer.')
     _print_elements(ADD, REMOVE, MOVE, SWITCH)
     print()
     
