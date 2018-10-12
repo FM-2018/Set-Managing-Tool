@@ -161,6 +161,17 @@ def create(user_args):
     file_set_cache.append(new_file_set)
     return new_file_set
 
+def rename(file_set, user_args):
+    """Rename / change the pattern of the currently selected file set."""
+    args_len = len(user_args)
+    
+    if args_len != 2:
+        raise ArgumentAmountError("Rename expects exactly 2 arguments. You supplied {}. Usage: rename NEW_PATTERN".format(args_len))
+    
+    new_pattern = _expand_pattern(user_args[1])
+    
+    file_set.rename(new_pattern)
+
 def print_help(_1, _2):
     """Print the usage and commands of this CLI."""
     
@@ -178,10 +189,11 @@ def print_help(_1, _2):
     print('## COMMANDS ##')
     CREATE =    ('create SET_PATTERN',  'Create a file set with the supplied pattern. If a FileSet with this pattern already exists, select it.')
     CHOOSE =    ('choose [SET_NUMBER]', 'Choose the file set with the supplied number. If no number is supplied, all auto-detected and known file_sets will be listed to choose from. In case this fails to bring up the FileSet you are looking for, you can still select it by using: "create PATTERN"')
+    RENAME =    ('rename NEW_PATTERN'),'Rename / change the pattern of the currently selected file set.'
     LIST =      ('list',                'List all files currently in the set in adjacent order')
     EXIT =      ('exit',                'Exit the current file set. If no file set is selected, terminate the program.')
     TERMINATE = ('terminate',           'Terminate the program.')
-    _print_elements(CREATE, CHOOSE, LIST, EXIT, TERMINATE)
+    _print_elements(CREATE, CHOOSE, RENAME, LIST, EXIT, TERMINATE)
     print()
     
     print('## OPERATIONS ##')
@@ -690,7 +702,8 @@ def determine_and_perform_action(args_list):
             '+':        add,
             '-':        remove,
             'fix':      fix,
-            'list':     list_files
+            'list':     list_files,
+            'rename':   rename
         }
     action_dictionary_lv2 = {
             '>': move,
@@ -707,7 +720,7 @@ def determine_and_perform_action(args_list):
 
     
     if command_or_operand == 'terminate':
-        raise TerminateProgram()
+        raise TerminateProgram("")
 
     #------------------------------------------------------------------------------
     # Actions that may modify the active_file_set cannot feasibly be contained within

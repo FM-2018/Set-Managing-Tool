@@ -18,6 +18,7 @@ mock_switch = mock.MagicMock(name='switch')
 
 mock_list_files = mock.MagicMock(name='list_files')
 mock_choose = mock.MagicMock(name='choose')
+mock_rename = mock.MagicMock(name='rename')
 mock_create = mock.MagicMock(name='create')
 mock_help = mock.MagicMock(name='print_help')
 mock_fix = mock.MagicMock(name='fix')
@@ -25,8 +26,8 @@ mock_fix = mock.MagicMock(name='fix')
 mock_print = mock.MagicMock(name='print')
 
 registered_mocks = [mock_add, mock_remove, mock_move, mock_switch, 
-                    mock_list_files, mock_choose, mock_create,
-                    mock_help, mock_fix, mock_print]
+                    mock_list_files, mock_choose, mock_rename,
+                    mock_create, mock_help, mock_fix, mock_print]
 
 
 def _assert_only_this_mock_called(expectedly_called_mock, expected_call_args):
@@ -46,6 +47,7 @@ def _assert_only_this_mock_called(expectedly_called_mock, expected_call_args):
 @mock.patch('CLI.switch', new=mock_switch)
 @mock.patch('CLI.list_files', new=mock_list_files)
 @mock.patch('CLI.choose', new=mock_choose)
+@mock.patch('CLI.rename', new=mock_rename)
 @mock.patch('CLI.create', new=mock_create)
 @mock.patch('CLI.print_help', new=mock_help)
 @mock.patch('CLI.fix', new=mock_fix)
@@ -68,6 +70,7 @@ class DetermineAndPerformActionTests(unittest.TestCase):
         
         mock_list_files.reset_mock()
         mock_choose.reset_mock()
+        mock_rename.reset_mock()
         mock_create.reset_mock()
         mock_help.reset_mock()
         mock_fix.reset_mock()
@@ -123,6 +126,14 @@ class DetermineAndPerformActionTests(unittest.TestCase):
          
         _assert_only_this_mock_called(mock_choose, [self.active_file_set_dummy, args_list])
         
+    def test_call_rename(self):
+        """The method should correctly call only the rename method and pass the given arguments to it."""
+        args_list = ['rename', 'new*name']
+        
+        determine_and_perform_action(args_list)
+        
+        _assert_only_this_mock_called(mock_rename, [self.active_file_set_dummy, args_list])
+
     def test_call_create(self):
         """The method should correctly call only the create method and pass the given arguments to it."""
         args_list = ['create', 'File*Set']
