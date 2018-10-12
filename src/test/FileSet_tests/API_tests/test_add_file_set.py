@@ -356,7 +356,7 @@ class AddFileSetTests(unittest.TestCase):
         mock_assert_msg(mock_remove_logically, [], "The FileSet logically removes files from the foreign_file_set despite having run into an error.")
         
     def test_gap_in_foreign_add_files_strip_gaps(self): 
-        """The FileSet should ignore gaps in the foreign FileSet if preserve_gaps is set to True."""
+        """The FileSet should ignore gaps in the foreign FileSet if strip_gaps is set to True."""
         test_files = ['test (0).jpg', 'test (1).jpg', 'test (2).jpg', 'test (3).jpg']
         test_set = FileSet(self.pattern, test_files)
         
@@ -382,6 +382,37 @@ class AddFileSetTests(unittest.TestCase):
         assertion_calls = [
                 (mock_remove_logically.assert_any_call, [0, 'add']),
                 (mock_remove_logically.assert_any_call, [2, 'add'])
+            ]
+        mock_assert_many_msg(assertion_calls, "The FileSet fails to logically remove the files from the foreign file_set's file list.")
+        self.assertEqual(amount_added, 2, "The FileSet fails to return the number of indexes that were actually added when the files to be added contain gaps with strip_gaps set to True.")
+    
+    def test_wide_gap_in_foreign_add_files_strip_gaps(self):
+        """The FileSet should still correctly strip all gaps in the foreign FileSet if strip_gaps is set to True, even if the gap is wider than just one."""
+        test_files = ['test (0).jpg', 'test (1).jpg', 'test (2).jpg', 'test (3).jpg']
+        test_set = FileSet(self.pattern, test_files)
+        
+        add_files = ['add (0).add', 'add (3).add']
+        add_set = FileSet(('add (', ')'), add_files)
+        
+        try:
+            amount_added = test_set.add_file_set(add_set, (1, 2), range(0, 3+1), strip_gaps=True)
+        except FileSet.IndexUnassignedError as e:
+            raise AssertionError(e.args, "The FileSet raises an exception when encountering a gap even though strip_gaps was set to True.")
+        
+        mock_assert_msg(mock_move_range.assert_called_once_with, [(2, 3), 4], "The FileSet fails to make the correct amount of space for the newly added files when the file set to be added from contains wide gaps and strip_gaps is set to True.")
+        assertion_calls = [
+                (mock_rename.assert_any_call, ['add (0).add', 'test (2).add']),
+                (mock_rename.assert_any_call, ['add (3).add', 'test (3).add'])
+            ]
+        mock_assert_many_msg(assertion_calls, "The FileSet fails to physically add the files from the foreign FileSet with gaps if strip_gaps is True.")
+        assertion_calls = [
+                (mock_add_logically.assert_any_call, [2, 'add']),
+                (mock_add_logically.assert_any_call, [3, 'add'])
+            ]
+        mock_assert_many_msg(assertion_calls, "The FileSet fails to logically add the files.")
+        assertion_calls = [
+                (mock_remove_logically.assert_any_call, [0, 'add']),
+                (mock_remove_logically.assert_any_call, [3, 'add'])
             ]
         mock_assert_many_msg(assertion_calls, "The FileSet fails to logically remove the files from the foreign file_set's file list.")
         self.assertEqual(amount_added, 2, "The FileSet fails to return the number of indexes that were actually added when the files to be added contain gaps with strip_gaps set to True.")
