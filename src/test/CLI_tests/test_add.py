@@ -106,7 +106,7 @@ class AddTests(unittest.TestCase):
     def test_invalid_spot(self):
         """The CLI should check the spot for validity and raise an exception if the spot is invalid."""
         test_args = ['+', 'file.jpg', '3/4']
-        mock_expand_spot.side_effect = SpotExpansionError()
+        mock_expand_spot.side_effect = SpotExpansionError("Invalid Spot 3/4")
         mock_isfile.return_value = True
         CLI.file_set_cache = []
          

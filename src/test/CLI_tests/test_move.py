@@ -57,7 +57,7 @@ class MoveTests(unittest.TestCase):
         """The CLI should recognize an invalid range and raise an error."""
         test_args = ['invalid_range', '>', '1/2']
         mock_expand_spot.return_value = (1, 2)
-        mock_expand_range.side_effect = RangeExpansionError()
+        mock_expand_range.side_effect = RangeExpansionError("Invalid range 'invalid range'")
         
         with self.assertRaises(RangeExpansionError, msg="The CLI fails to recognize an invalid range."):
             move(self.test_set, test_args)
@@ -67,7 +67,7 @@ class MoveTests(unittest.TestCase):
     def test_invalid_spot(self):
         """The CLI should recognize an invalid spot and raise an error."""
         test_args = ['3-5', '>', 'invalid_spot']
-        mock_expand_spot.side_effect = SpotExpansionError()
+        mock_expand_spot.side_effect = SpotExpansionError("Invalid Spot 'invalid spot'")
         mock_expand_range.return_value = (3, 5)
         
         with self.assertRaises(SpotExpansionError, msg="The CLI fails to recognize an invalid spot."):

@@ -52,7 +52,7 @@ class SwitchTests(unittest.TestCase):
             if x == 2:
                 return (2, 2)
             else:
-                raise RangeExpansionError()
+                raise RangeExpansionError("invalid range 'not a range'")
         mock_expand_range.side_effect = mock_expand_range_side_effect
         
         with self.assertRaises(RangeExpansionError, msg="The CLI fails to recognize an invalid range in the switch operation."):
