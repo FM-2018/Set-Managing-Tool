@@ -403,7 +403,7 @@ class FileSet():
     #===========================================================================
     def change_pattern(self, new_pattern):
         """
-        Rename all of the files contained in the file set using the given new pattern, effectively changing the patter of the set.
+        Rename all of the files contained in the file set using the given new pattern, effectively changing the pattern of the set.
         
         @param new_pattern: The new pattern to be used
         """
