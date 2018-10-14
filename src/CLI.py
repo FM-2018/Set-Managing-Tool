@@ -63,7 +63,6 @@ class ArgumentAmountError(CLIError):
 #------------------------------------------------------------------------------ 
 # Commands
 #------------------------------------------------------------------------------ 
-
 def list_files(file_set, _):
     """Print a list of files in the FileSet and mark gaps as well as multi-assigned indexes."""
     gaps, multi_indexes = file_set.find_flaws()
@@ -163,12 +162,21 @@ def create(user_args):
 
 def rename(file_set, user_args):
     """Rename / change the pattern of the currently selected file set."""
-    args_len = len(user_args)
+    global file_set_cache
     
+    if file_set is None:
+        raise CLIRuntimeError("No file set has been selected!")
+    
+    args_len = len(user_args)
     if args_len != 2:
         raise ArgumentAmountError("Rename expects exactly 2 arguments. You supplied {}. Usage: rename NEW_PATTERN".format(args_len))
     
     new_pattern = _expand_pattern(user_args[1])
+    
+    ## Check whether such a pattern is already used by a known file set. If yes, can't rename!
+    for file_set in file_set_cache:
+        if file_set.pattern == new_pattern:
+            raise CLIRuntimeError("There already is a file set with the pattern '{}'!".format(new_pattern))
     
     file_set.change_pattern(new_pattern)
 

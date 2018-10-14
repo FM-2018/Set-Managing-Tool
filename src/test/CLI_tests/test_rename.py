@@ -27,6 +27,9 @@ class RenameTests(unittest.TestCase):
         mock_change_pattern.reset_mock()
         
         mock_expand_pattern.side_effect = None
+        
+        CLI.file_set_cache = []
+        
     
     def test_valid_arguments(self):
         """The method should correctly perform its operation if its given valid arguments."""
