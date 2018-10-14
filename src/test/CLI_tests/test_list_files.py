@@ -6,7 +6,7 @@ Created on 07.09.2018
 import unittest
 import unittest.mock as mock
 from FileSet import FileSet
-from CLI import list_files
+from CLI import list_files, CLIRuntimeError
 from test.testing_tools import mock_assert_msg
 
 
@@ -76,7 +76,14 @@ class ListFilesTests(unittest.TestCase):
         expected_print_list = ['test (0).jpg', 'test (1).jpg', 'G', 'G', 'test (4).jpg', '[//: test (5).jpg', 'test (5).png :\\\\]']
         expected_string = ', '.join(expected_print_list)
         mock_assert_msg(mock_print.assert_called_once_with, [expected_string], "The CLI fails to list the files and gaps of a file set while marking those that share multi-assigned indexes.")
-
+    
+    def test_no_set_selected(self):
+        """The CLI should be able to recognize and raise an error if no file set is selected."""
+        with self.assertRaises(CLIRuntimeError, msg="The CLI fails to recognize and raise an error when no file set has been selected."):
+            list_files(None, '')
+        
+        mock_assert_msg(mock_print.assert_not_called, [], "The method prints a message even though an error was raised.")
+        
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

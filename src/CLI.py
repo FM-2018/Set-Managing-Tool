@@ -65,6 +65,9 @@ class ArgumentAmountError(CLIError):
 def list_files(file_set, _):
     """Print a list of files in the FileSet and mark gaps as well as multi-assigned indexes."""
     ## TODO: use colored output for multi-assigned indexes and gaps for better readability; or print flaws in bold?
+    if file_set is None:
+        raise CLIRuntimeError("No file set has been selected!")
+    
     gaps, multi_indexes = file_set.find_flaws()
     
     ## Format gaps and multi-assigned indexes into list and dictionary
