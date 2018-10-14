@@ -25,18 +25,17 @@ import re
 # TODO: add method "rename" to change file set pattern
 class FileSet():
     """
-    A class that unites multiple files following a naming pattern into a set.
-    
+    A class that unites multiple files following a naming pattern into a file set.
     
     # TERMINOLOGY #
-    pattern:
-    spot:
-    file:
-    logically: 
-    physically: 
-    unassigned index: An index that is not used by any file
-    gap: An unassigned index within the set (meaning that it is smaller than the file set's max_index) 
-    multi-assigned index: An index that is used by more than one file
+    pattern:               A 2-tuple containing the strings to the left and to the right of a running index (excluding file extensions)
+    spot:                  A 2-tuple consisting of two adjacent indexes, representing the spot in between them
+    file:                  A string representing the name of a file with its file extension. (e.g.: "file1.jpg")
+    logically:             Performing an operation on the logical level, e.g. updating the FileSet's internal files dictionary
+    physically:            Performing an operation on the physical level, e.g. renaming a file that currently belongs to a FileSet
+    unassigned index:      An index that is not used by any file
+    gap:                   An unassigned index within the set (meaning that it is smaller than the file set's max_index) 
+    multi-assigned index:  An index that is used by more than one file
     """
     type_regex = re.compile(r"(?<!^)\.(.+)$")
     INDEX_INDICATOR = '*'
