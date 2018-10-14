@@ -11,7 +11,6 @@ import shutil
 
 from FileSet import FileSet
 
-
 ## TODO: path and directory management
 DEFAULT_REMOVE_PATTERN = ('RMVD', '')
 INVALID_CHARS_REGEX = re.compile('[' + re.escape(r'\/:*?"<>|') + ']')
@@ -65,6 +64,7 @@ class ArgumentAmountError(CLIError):
 #------------------------------------------------------------------------------ 
 def list_files(file_set, _):
     """Print a list of files in the FileSet and mark gaps as well as multi-assigned indexes."""
+    ## TODO: use colored output for multi-assigned indexes and gaps for better readability; or print flaws in bold?
     gaps, multi_indexes = file_set.find_flaws()
     
     ## Format gaps and multi-assigned indexes into list and dictionary
@@ -174,8 +174,8 @@ def rename(file_set, user_args):
     new_pattern = _expand_pattern(user_args[1])
     
     ## Check whether such a pattern is already used by a known file set. If yes, can't rename!
-    for file_set in file_set_cache:
-        if file_set.pattern == new_pattern:
+    for cached_file_set in file_set_cache:
+        if cached_file_set.pattern == new_pattern:
             raise CLIRuntimeError("There already is a file set with the pattern '{}'!".format(new_pattern))
     
     file_set.change_pattern(new_pattern)
