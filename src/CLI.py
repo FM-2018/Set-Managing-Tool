@@ -170,7 +170,7 @@ def rename(file_set, user_args):
     
     new_pattern = _expand_pattern(user_args[1])
     
-    file_set.rename(new_pattern)
+    file_set.change_pattern(new_pattern)
 
 def print_help(_1, _2):
     """Print the usage and commands of this CLI."""

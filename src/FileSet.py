@@ -401,9 +401,9 @@ class FileSet():
     #===========================================================================
     # High level / API Procedures
     #===========================================================================
-    def rename(self, new_pattern):
+    def change_pattern(self, new_pattern):
         """
-        Rename all of the files contained in the file set using the given new pattern.
+        Rename all of the files contained in the file set using the given new pattern, effectively changing the patter of the set.
         
         @param new_pattern: The new pattern to be used
         """
