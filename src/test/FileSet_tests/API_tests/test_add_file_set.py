@@ -29,6 +29,8 @@ class AddFileSetTests(unittest.TestCase):
         mock_rename.reset_mock()
         mock_add_logically.reset_mock()
         mock_remove_logically.reset_mock()
+        
+        mock_remove_logically.side_effect = None
     
     
     def test_middle(self):
@@ -487,7 +489,49 @@ class AddFileSetTests(unittest.TestCase):
             ]
         mock_assert_many_msg(assertion_calls, "The FileSet fails to logically remove the files from the foreign file_set's file list.")
         self.assertEqual(amount_added, 6, "The FileSet fails to return the correct number of indexes that were actually added when adding by a given index iterable.")
+    
+    def test_multi_assigned_index_real_world(self):
+        """The FileSet should be able to add a multi-assigned index from another file set to itself with real world side effects."""
+        test_files = ['test (0).jpg', 'test (1).jpg', 'test (2).jpg', 'test (3).jpg']
+        test_set = FileSet(self.pattern, test_files)
         
+        def mock_remove_logically_side_effect(index, file_type):
+            file_types_at_index = add_set.files.get(index, None)
+            if file_types_at_index is None:
+                raise FileSet.IndexUnassignedError(self, index, "The index '{}' is not assigned in the file set '{}'.".format(index, str(add_set)))
+            elif len(file_types_at_index) == 1:
+                add_set.files.pop(index) # remove entire index
+                if index == add_set.max_index:
+                    add_set.max_index = add_set._find_max_index()
+            else:
+                file_types_at_index.remove(file_type) # only remove this type from index file_type list, since there are more types assigned
+        mock_remove_logically.side_effect = mock_remove_logically_side_effect
+        
+        add_files = ['add (0).add1', 'add (0).add2', 'add (0).add3']
+        add_set = FileSet(('add (', ')'), add_files)
+        
+        test_set.add_file_set(add_set, (1, 2))
+        
+        mock_assert_msg(mock_move_range.assert_called_with, [(2, 3), 3], "The FileSet fails to correctly make space for the new files.")
+        assertion_calls = [
+                (mock_rename.assert_any_call, ['add (0).add1', 'test (2).add1']),
+                (mock_rename.assert_any_call, ['add (0).add2', 'test (2).add2']),
+                (mock_rename.assert_any_call, ['add (0).add3', 'test (2).add3'])
+            ]
+        mock_assert_many_msg(assertion_calls, "The FileSet fails to physically add the files.")
+        assertion_calls = [
+                (mock_add_logically.assert_any_call, [2, 'add1']),
+                (mock_add_logically.assert_any_call, [2, 'add2']),
+                (mock_add_logically.assert_any_call, [2, 'add3'])
+            ]
+        mock_assert_many_msg(assertion_calls, "The FileSet fails to logically add the files.")
+        assertion_calls = [
+                (mock_remove_logically.assert_any_call, [0, 'add1']),
+                (mock_remove_logically.assert_any_call, [0, 'add2']),
+                (mock_remove_logically.assert_any_call, [0, 'add3'])
+            ]
+        mock_assert_many_msg(assertion_calls, "The FileSet fails to logically remove the files from the foreign file_set's file list.")
+    
     def test_try_invalid_iterator(self):
         """The FileSet should raise an error when the given iterator doesn't solely contain valid integers."""
         test_files = ['test (0).jpg', 'test (1).jpg', 'test (2).jpg', 'test (3).jpg']

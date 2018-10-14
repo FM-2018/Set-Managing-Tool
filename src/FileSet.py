@@ -614,7 +614,7 @@ class FileSet():
                 added_index_count += 1
                 pass
             else:
-                for file_type in file_types:
+                for file_type in file_types[:]: # shallow copy to avoid issues with logical removal within loop
                     old_name = "{}{}{}.{}".format(foreign_left_pattern, old_index, foreign_right_pattern, file_type)
                     new_name = self._get_name(new_index, file_type)
                     
