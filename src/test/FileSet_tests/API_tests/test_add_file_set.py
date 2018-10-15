@@ -355,7 +355,7 @@ class AddFileSetTests(unittest.TestCase):
         mock_assert_msg(mock_move_range.assert_not_called, [], "The FileSet moves a range despite having run into an error.")
         mock_assert_msg(mock_rename.assert_not_called, [], "The FileSet physically adds files despite having run into an error.")
         mock_assert_msg(mock_add_logically.assert_not_called, [], "The FileSet logically adds files despite having run into an error.")
-        mock_assert_msg(mock_remove_logically, [], "The FileSet logically removes files from the foreign_file_set despite having run into an error.")
+        mock_assert_msg(mock_remove_logically.assert_not_called, [], "The FileSet logically removes files from the foreign_file_set despite having run into an error.")
         
     def test_gap_in_foreign_add_files_strip_gaps(self): 
         """The FileSet should ignore gaps in the foreign FileSet if strip_gaps is set to True."""

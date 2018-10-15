@@ -22,7 +22,6 @@ import re
 # TODO: extra object for a files dictionary with useful methods?
 # TODO: rework documentation; reflect errors, parameters and special traits
 # TODO: add method add_file_sets to optimize addition from multiple sets at once
-# TODO: add method "rename" to change file set pattern
 class FileSet():
     """
     A class that unites multiple files following a naming pattern into a file set.
@@ -479,7 +478,7 @@ class FileSet():
         
         self.files.update({insert_index: [file_type]}) # logically add file 
     
-    def add_files(self, file_names, spot, ignore_unfound_files=False): # TODO: add tests for this
+    def add_files(self, file_names, spot, ignore_unfound_files=False):
         """
         Add a list of files to the FileSet given their names. This is the preferred method for adding multiple files that don't belong to a set just yet.
           
