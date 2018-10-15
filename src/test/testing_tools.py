@@ -6,9 +6,13 @@ Created on 27.08.2018
 @author: FM
 '''
 from collections import namedtuple
+import types # get access to types such as function or method)
 
 ## TODO: create class MockAssertionError and implement a string method for better readability
-## TODO: add type check for given mock_methods in order to catch instances where only mock is given without its method (which leads to silent, useless tests)
+
+class InvalidMockMethodError(Exception):
+    """Raised when a passed mock_method is not actually a method."""
+
 
 #------------------------------------------------------------------------------
 # Generator that allows mocking os.scandir()
@@ -62,6 +66,10 @@ def mock_assert_msg(mock_method, given_args, msg):
     @param given_args: A list of arguments to call the mock_method with. Keyword arguments need to be wrapped in a KeywordArgTuple
     @param msg: The message to display upon failure
     """
+    
+    if not isinstance(mock_method, types.MethodType):
+        raise InvalidMockMethodError("The given method '{}' is not a method.".format(mock_method))
+    
     args, kwargs = _split_args_and_kwargs(given_args)
     
     try:
@@ -79,6 +87,10 @@ def mock_assert_many_msg(calls, msg):
     try:
         for call in calls:
             mock_method, given_args = call
+            
+            if not isinstance(mock_method, types.MethodType):
+                raise InvalidMockMethodError("The given method '{}' is not a method.".format(mock_method))
+            
             args, kwargs = _split_args_and_kwargs(given_args)
             mock_method(*args, **kwargs)
     except AssertionError as e:
