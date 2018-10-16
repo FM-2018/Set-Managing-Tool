@@ -7,7 +7,6 @@ import unittest
 from CLI import _expand_range, RangeExpansionError
 
 
-## TODO: check for proper error message in tests
 class ExpandRangeTests(unittest.TestCase):
 
     def test_expand_valid_range(self):

@@ -11,14 +11,10 @@ import re
 # TODO: check patterns and add_file/remove_file inputs for forbidden characters | may not be useful, since Linux allows basically everything
 # TODO: working directory/path management
 # TODO: add check so change_index doesn't change into negative numbers?
-# TODO: give warning when multi-assigned indexes are detected at compilation time
-# TODO: Refactor KeyError Try/Except statements when deleting and instead use pop
 # TODO: Add append_file and append_files ? If yes, use for move and switch operations
 # TODO: use dict.get() method where appropriate to get key
-# TODO: implement close_gap method
 # TODO: polish FileSet and remove unnecessary variables etc
 # TODO: implement find_pattersn in FileSet instead of CLI?
-# TODO: write a proper classdoc
 # TODO: extra object for a files dictionary with useful methods?
 # TODO: rework documentation; reflect errors, parameters and special traits
 # TODO: add method add_file_sets to optimize addition from multiple sets at once
@@ -553,7 +549,6 @@ class FileSet():
         
         @return: The count of indexes that were actually added. (if preserve_gaps is chosen, gaps will be included in this count)
         """
-        # TODO: allow list of file/path names
         if add_indexes == 'ALL': 
             add_indexes = [*foreign_file_set.files.keys()]
         else:

@@ -7,7 +7,6 @@ import unittest
 from CLI import _expand_spot, SpotExpansionError
 
 
-## TODO: check for proper error message in tests
 class ExpandSpotTests(unittest.TestCase):
 
 
