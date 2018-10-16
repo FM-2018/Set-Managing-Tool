@@ -302,8 +302,6 @@ class FixTests(unittest.TestCase):
                 [(2, ['gif', 'png']), (7, ['gif', 'jpg', 'mp4'])]
             )
         
-        # FIXME: test multi assigned indexes fix gaps
-        
         def mock_change_index_side_effect(f, t, _2=None):
             """Update the max index of the file set."""
             if t > test_set.max_index:
