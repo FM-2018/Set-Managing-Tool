@@ -12,8 +12,6 @@ import re
 # TODO: working directory/path management
 # TODO: add check so change_index doesn't change into negative numbers?
 # TODO: Add append_file and append_files ? If yes, use for move and switch operations
-# TODO: use dict.get() method where appropriate to get key
-# TODO: polish FileSet and remove unnecessary variables etc
 # TODO: implement find_pattersn in FileSet instead of CLI?
 # TODO: extra object for a files dictionary with useful methods?
 # TODO: rework documentation; reflect errors, parameters and special traits
