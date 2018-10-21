@@ -112,7 +112,9 @@ def list_files(file_set, _):
 
 def choose(_, user_args):
     """Choose the file set with the given number (2nd argument), or, if no number is supplied, list all available cached file sets."""
-    if len(user_args) == 1: # only typed 'choose'
+    if len(user_args) > 2:
+        raise ArgumentAmountError("Choose takes 1 to 2 arguments. You supplied {}. Usage: choose [SET_NUMBER]".format(len(user_args)))
+    elif len(user_args) == 1: # only typed 'choose'
         _enumerate_available_sets()
     else:
         try:
@@ -279,7 +281,10 @@ def fix(file_set, user_args):
         file_set.fix()
     elif len(user_args) == 2:
         if user_args[1] == 'all':
-            file_set.fix(True)
+            try:
+                file_set.fix(True)
+            except FileSet.TooManyFilesError as e:
+                raise CLIRuntimeError(*e.args)
         else:
             raise InputProcessingError(user_args, "The command '{} {}' can't be understood. Did you mean to put: 'fix all'?".format(user_args[0], user_args[1]))
     else:
