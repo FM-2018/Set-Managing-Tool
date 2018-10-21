@@ -622,20 +622,6 @@ def _expand_range(raw_index_range):
     else:
         return (int1, int2)
 
-def _compare(expected_string, actual_string):
-    """
-    Compare two string literals and raise an error if they are different.
-    
-    @raise InputProcessingError: The two strings are different
-    
-    @return: The string
-    """
-    if not expected_string == actual_string:
-        raise InputProcessingError(expected_string, actual_string, "Expected '{}', but got '{}'!".format(expected_string, actual_string))
-    else:
-        return actual_string
-    
-
 def check_contains_invalid_chars(string):
     """
     Check whether a string contains characters that are invalid for file names.
