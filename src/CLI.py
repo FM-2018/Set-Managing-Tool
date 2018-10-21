@@ -147,8 +147,8 @@ def create(user_args):
     
     @return: The new or existing file set having the given pattern
     """
-    if len(user_args) > 2:
-        raise InputProcessingError("create expects exactly 2 arguments. You supplied {}. Usage: create PATTERN".format(len(user_args)-1))
+    if len(user_args) < 2 or len(user_args) > 2:
+        raise ArgumentAmountError("create expects exactly 2 arguments. You supplied {}. Usage: create PATTERN".format(len(user_args)-1))
     
     pattern = _expand_pattern(user_args[1])
     
