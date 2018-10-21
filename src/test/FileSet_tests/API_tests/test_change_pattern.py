@@ -11,7 +11,7 @@ from test.testing_tools import mock_assert_msg, mock_assert_many_msg
 mock_rename = mock.MagicMock(name='rename')
 
 @mock.patch('FileSet.rename', new=mock_rename)
-class RenameTests(unittest.TestCase):
+class ChangePatternTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -29,9 +29,9 @@ class RenameTests(unittest.TestCase):
     def test_simple_set(self):
         """The method should be able to rename all files of a continuous file set and update the file set's pattern."""
         self.test_set.files = {0: ['jpg'], 1: ['jpg'], 2: ['jpg'], 3: ['jpg']}
-        
-        self.test_set.rename(self.new_pattern)
-        
+         
+        self.test_set.change_pattern(self.new_pattern)
+         
         assertion_calls = [
                 (mock_rename.assert_any_call, ['test (0).jpg', 'new0.jpg']),
                 (mock_rename.assert_any_call, ['test (1).jpg', 'new1.jpg']),
@@ -40,22 +40,22 @@ class RenameTests(unittest.TestCase):
             ]
         mock_assert_many_msg(assertion_calls, "The method fails to correctly rename the files.")
         self.assertEqual(self.test_set.pattern, self.new_pattern, "The method fails to update the file set's pattern.")
-        
+         
     def test_no_files(self):
         """The method should be able to deal with a file set that contains no files and update the file set's pattern."""
         self.test_set.files = {}
-        
-        self.test_set.rename(self.new_pattern)
-        
+         
+        self.test_set.change_pattern(self.new_pattern)
+         
         mock_assert_msg(mock_rename.assert_not_called, [], "The method tries to rename files even though there are none.")
         self.assertEqual(self.test_set.pattern, self.new_pattern, "The method fails to update the file set's pattern.")
-    
+     
     def test_set_with_gaps(self):
         """The method should be able to rename all files of a file set with gaps and update the file set's pattern."""
         self.test_set.files = {0: ['jpg'], 1: ['jpg'], 3: ['jpg'], 6: ['jpg']}
-        
-        self.test_set.rename(self.new_pattern)
-        
+         
+        self.test_set.change_pattern(self.new_pattern)
+         
         assertion_calls = [
                 (mock_rename.assert_any_call, ['test (0).jpg', 'new0.jpg']),
                 (mock_rename.assert_any_call, ['test (1).jpg', 'new1.jpg']),
@@ -64,13 +64,13 @@ class RenameTests(unittest.TestCase):
             ]
         mock_assert_many_msg(assertion_calls, "The method fails to correctly rename the files.")
         self.assertEqual(self.test_set.pattern, self.new_pattern, "The method fails to update the file set's pattern.")
-        
+         
     def test_multi_assigned_indexes(self):
         """The method should be able to rename all files of a file set that has multi-assigned indexes and update the file set's pattern."""
         self.test_set.files = {0: ['jpg'], 1: ['jpg', 'png', 'mp4'], 2: ['jpg']}
-        
-        self.test_set.rename(self.new_pattern)
-        
+         
+        self.test_set.change_pattern(self.new_pattern)
+         
         assertion_calls = [
                 (mock_rename.assert_any_call, ['test (0).jpg', 'new0.jpg']),
                 (mock_rename.assert_any_call, ['test (1).jpg', 'new1.jpg']),
