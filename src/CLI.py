@@ -288,7 +288,7 @@ def fix(file_set, user_args):
         else:
             raise InputProcessingError(user_args, "The command '{} {}' can't be understood. Did you mean to put: 'fix all'?".format(user_args[0], user_args[1]))
     else:
-        raise InputProcessingError(user_args, "Fix takes zero to one argument(s). You supplied {}.".format(len(user_args)-1))
+        raise ArgumentAmountError(user_args, "Fix expects one to two argument(s). You supplied {}.".format(len(user_args)-1))
         
 
 #------------------------------------------------------------------------------ 
