@@ -167,19 +167,37 @@ class DetermineAndPerformActionTests(unittest.TestCase):
             
         ## Make a new mock that is unregistered in the global list. That way, it will never be
         ## checked whether it was actually ever called. It will only be checked whether
-        ## all of the registered once have NOT been called.
+        ## all of the registered ones have NOT been called.
         _assert_only_this_mock_called(mock.MagicMock(), [])
         
     def test_exit_program(self):
-        """The method should terminate the problem if the user enters 'exit' without having an active file set."""
+        """The method should terminate the program if the user enters 'exit' without having an active file set."""
         args_list = ['exit']
         
-        # TODO: test exit program
+        CLI.active_file_set = None # no active file set
+        
+        with self.assertRaises(TerminateProgram, msg="The method fails to terminate the program by raising an exception if the user exits when no file set is active."):
+            determine_and_perform_action(args_list)
+        
+        ## Make a new mock that is unregistered in the global list. That way, it will never be
+        ## checked whether it was actually ever called. It will only be checked whether
+        ## all of the registered ones have NOT been called.
+        _assert_only_this_mock_called(mock.MagicMock(), [])
         
     def test_exit_file_set(self):
         """The method should exit the currently active file set if the user enters 'exit'"""
+        args_list = ['exit']
         
-        # TODO: test exit file set
+        CLI.active_file_set = FileSet(('test', ''), []) # active file set is not None
+        
+        determine_and_perform_action(args_list)
+        
+        self.assertEqual(CLI.active_file_set, None, "The method failed to leave the currently active_file_set.")
+        
+        ## Make a new mock that is unregistered in the global list. That way, it will never be
+        ## checked whether it was actually ever called. It will only be checked whether
+        ## all of the registered ones have NOT been called.
+        _assert_only_this_mock_called(mock.MagicMock(), [])
     
     def test_no_action_applies(self):
         """The method should print an according message if no correct action could be determined by the given arguments."""
@@ -197,7 +215,7 @@ class DetermineAndPerformActionTests(unittest.TestCase):
         
         ## Make a new mock that is unregistered in the global list. That way, it will never be
         ## checked whether it was actually ever called. It will only be checked whether
-        ## all of the registered once have NOT been called.
+        ## all of the registered ones have NOT been called.
         _assert_only_this_mock_called(mock.MagicMock(), [])
         
 if __name__ == "__main__":
