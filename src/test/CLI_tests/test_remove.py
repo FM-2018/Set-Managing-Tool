@@ -11,9 +11,9 @@ from FileSet import FileSet
 from test.testing_tools import mock_assert_msg, KeywordArgTuple
 import unittest.mock as mock
 
-
 mock_remove_files = mock.MagicMock(name='remove_files')
 mock_expand_range = mock.MagicMock(name='_expand_range')
+
 
 @mock.patch('FileSet.FileSet.remove_files', new=mock_remove_files)
 @mock.patch('CLI._expand_range', new=mock_expand_range)
@@ -23,8 +23,8 @@ class RemoveTests(unittest.TestCase):
     def setUpClass(cls):
         cls.default_remove_set = FileSet(CLI.DEFAULT_REMOVE_PATTERN, [])
         cls.test_set = FileSet(
-                ('test (', ')'), 
-                ['test (0).jpg', 'test (1).jpg', 'test (2).jpg', 'test (3).jpg', 'test (4).jpg', 
+                ('test (', ')'),
+                ['test (0).jpg', 'test (1).jpg', 'test (2).jpg', 'test (3).jpg', 'test (4).jpg',
                  'test (5).jpg', 'test (6).jpg', 'test (7).jpg', 'test (8).jpg', 'test (9).jpg'] 
             )
     
@@ -34,8 +34,9 @@ class RemoveTests(unittest.TestCase):
         
         mock_expand_range.side_effect = None
         
+        mock_remove_files.side_effect = None
+        
         CLI.file_set_cache = []
-    
     
     def test_valid_operation(self):
         """The CLI should be able to perform a simple valid removal operation."""
@@ -54,7 +55,7 @@ class RemoveTests(unittest.TestCase):
         CLI.default_remove_set = self.default_remove_set
         
         test_set = FileSet(
-                ('test (', ')'), 
+                ('test (', ')'),
                 ['test (0).jpg', 'test (1).jpg', 'test (2).jpg', 'test (2).png', 'test (3).jpg', 'test (4).jpg'] 
             )
         
@@ -65,6 +66,7 @@ class RemoveTests(unittest.TestCase):
     def test_valid_operation_multiple_ranges(self):
         """The CLI should be able to perform a valid removal operation with numerous ranges given."""    
         test_args = ['-', '2-3', '5', '7-9']
+
         def mock_expand_range_side_effect(x):
             value_dic = {
                     '2-3': (2, 3),
@@ -73,6 +75,7 @@ class RemoveTests(unittest.TestCase):
                 }
             
             return value_dic[x]
+
         mock_expand_range.side_effect = mock_expand_range_side_effect 
         CLI.default_remove_set = self.default_remove_set
         
@@ -108,7 +111,7 @@ class RemoveTests(unittest.TestCase):
         
         custom_remove_set = FileSet(('custom', 'set'), [])
         mock_files_detected.return_value = custom_remove_set
-        CLI.file_set_cache = [custom_remove_set] # set already exists
+        CLI.file_set_cache = [custom_remove_set]  # set already exists
         
         with self.assertRaises(CLIRuntimeError, msg="The CLI fails to recognize when a supposedly new file set to remove files into already exists."):
             remove(self.test_set, test_args)
@@ -125,7 +128,7 @@ class RemoveTests(unittest.TestCase):
         CLI.default_remove_set = self.default_remove_set
         
         custom_remove_set = FileSet(('custom', 'set'), [])
-        CLI.file_set_cache = [custom_remove_set] # set already exists
+        CLI.file_set_cache = [custom_remove_set]  # set already exists
         
         remove(self.test_set, test_args)
         
@@ -139,7 +142,7 @@ class RemoveTests(unittest.TestCase):
         mock_expand_pattern.return_value = ('custom', 'set')
         CLI.default_remove_set = self.default_remove_set
         
-        CLI.file_set_cache = [] # file set cache stays empty, set doesn't exist
+        CLI.file_set_cache = []  # file set cache stays empty, set doesn't exist
         
         with self.assertRaises(CLIRuntimeError, msg="The CLI fails to recognize when a remove set to append removed files to doesn't exist."):
             remove(self.test_set, test_args)
@@ -168,7 +171,7 @@ class RemoveTests(unittest.TestCase):
         CLI.default_remove_set = default_remove_set
         
         custom_remove_set = FileSet(('custom', 'set'), [])
-        CLI.file_set_cache = [custom_remove_set] # set already exists
+        CLI.file_set_cache = [custom_remove_set]  # set already exists
         
         try:
             remove(default_remove_set, test_args)
@@ -241,7 +244,23 @@ class RemoveTests(unittest.TestCase):
         remove(self.test_set, test_args)
         
         mock_assert_msg(mock_remove_files.assert_called_once_with, [[2, 3, 4, 5], self.default_remove_set, KeywordArgTuple('preserve_gaps', True)], "The CLI fails to provide access to the gap-handling option preserve_gaps.")
-
+    
+    @mock.patch('CLI._expand_pattern')
+    def test_gap_handler_and_custom_set_specified(self, mock_expand_pattern):
+        """The CLI should be able to handle an operation which asks both for a custom set to remove files into and a specific gap-handling strategy."""
+        test_args = ["-", "-a", "custom*set", "1-3", "-pg"]  # append files and preserve gaps
+        mock_expand_range.return_value = (1, 3)
+        
+        mock_expand_pattern.return_value = ('custom', 'set')
+        CLI.default_remove_set = self.default_remove_set
+        
+        custom_remove_set = FileSet(('custom', 'set'), [])
+        CLI.file_set_cache = [custom_remove_set]  # set already exists (for convenience)
+        
+        remove(self.test_set, test_args)
+        
+        mock_assert_msg(mock_remove_files.assert_called_once_with, [[1, 2, 3], custom_remove_set, KeywordArgTuple('preserve_gaps', True)], "The CLI fails to correctly remove files into a custom set if a gap-handling strategy is specified")
+    
     def test_invalid_kwarg_gap_handler(self):
         """The CLI should recognize and raise an error if an invalid gap-handling option was chosen."""
         test_args = ['-', '2-3', '4-5', '-xx']
@@ -251,7 +270,21 @@ class RemoveTests(unittest.TestCase):
             remove(self.test_set, test_args)
         
         mock_assert_msg(mock_remove_files.assert_not_called, [], "The CLI tries to perform an operation even though an error was raised.")
+        
+    def test_gap_without_gap_handler(self):
+        """The CLI should raise an according CLIRuntimeError if the removal range contains a gap but no gap handling strategy has been specified."""
+        test_args = ["-", "8-11"]
+        
+        mock_expand_range.return_value = (8, 11)
+        
+        mock_remove_files.side_effect = FileSet.IndexUnassignedError(10, "Index 10 is unassigned and thus can't be removed.")
+        
+        with self.assertRaises(CLIRuntimeError, msg="The CLI fails to raise a CLIRuntimeError when encountering gaps without a gap handling strategy."):
+            remove(self.test_set, test_args)
+        
+        mock_assert_msg(mock_remove_files.assert_called_once_with, [[8, 9, 10, 11], self.default_remove_set], "The CLI doesn't correctly call the FileSet removal method.")
+
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
+    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
