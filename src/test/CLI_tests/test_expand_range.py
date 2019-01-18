@@ -25,6 +25,9 @@ class ExpandRangeTests(unittest.TestCase):
         """The CLI should be able to recognize a range containing invalid integers and raise an error accordingly."""
         with self.assertRaises(RangeExpansionError, msg="The CLI fails to recognize an invalid range with invalid integers."):
             _expand_range('a4-3')
+            
+        with self.assertRaises(RangeExpansionError, msg="The CLI fails to recognize an invalid range with invalid integers."):
+            _expand_range('3-ack')
     
     def test_invalid_too_many_integers_range(self):
         """The CLI should be able to recognize a range with too many integers and raise an error."""

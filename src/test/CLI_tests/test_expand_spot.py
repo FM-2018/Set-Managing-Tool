@@ -31,6 +31,9 @@ class ExpandSpotTests(unittest.TestCase):
         """The CLI should be able to recognize a spot containing invalid integers (i.e. letters)"""
         with self.assertRaises(SpotExpansionError, msg="The CLI fails to recognize a spot containing invalid integers."):
             _expand_spot('5/d5')
+            
+        with self.assertRaises(SpotExpansionError, msg="The CLI fails to recognize a spot containing invalid integers."):
+            _expand_spot('a4/5')
     
     def test_invalid_spot_separator(self):
         """The CLI should be able to recognize an invalid spot separator and raise an error accordingly."""
