@@ -1046,3 +1046,13 @@ class FileSet():
         # TODO: add add
 
 
+    def __lt__(self, other):
+        """
+        Less-than operator. A file set is "less than" another file set, if they are less by lexical order (first checked
+        on the left pattern part, and when in doubt also on the right pattern part)
+        """
+        self_left, self_right = self.pattern
+        other_left, other_right = other.pattern
+
+        return (self_left < other_left) or ((self_left == other_left) and (self_right < other_right))
+

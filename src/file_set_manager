@@ -108,6 +108,8 @@ def list_files(file_set, _):
 
 def choose(_, user_args):
     """Choose the file set with the given number (2nd argument), or, if no number is supplied, list all available cached file sets."""
+    file_set_cache.sort()
+
     if len(user_args) == 1: # only typed 'choose'
         _enumerate_available_sets()
     else:
